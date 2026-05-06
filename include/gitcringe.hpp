@@ -29,8 +29,10 @@ namespace cringe
 
     class Commit
     {
+        Repo &repo;
+        commit_id_t id;
     public:
-        Commit(Repo repo, commit_id_t id);
+        Commit(Repo &repo, commit_id_t id);
         ~Commit();
 
 
@@ -43,43 +45,79 @@ namespace cringe
 
         int64_t GetId();
         
-        std::span<Commit> GetParents();
+        std::vector<Commit> GetParents();
     };
 
+    enum PendingUpdateAction
+    {
+        PendingUpdateActionData,
+        PendingUpdateActionDelete,
+    };
+    
     class Transaction
     {
+        struct PendingUpdate
+        {
+            std::array<uint8_t, 32> hash;
+            PendingUpdateAction action;
+            std::filesystem::path file;
+        };
+        
+        Repo &repo;
+        SQLite::Transaction tn;
+        std::vector<PendingUpdate> updates;
+        std::vector<Commit> parents;
+        
+        vector<std::filesystem::path> Transaction::GetDiffrentFiles()    
+        
+        int64_t GetFileId(PendingUpdate update);
+            
     public:
-        Transaction(Repo repo);
+        Transaction(Repo &repo, SQLite::Transaction tn);
         ~Transaction();
 
         // Applyes changes and returnining new commit
         Commit Apply();
+        
         // Add changes
         void LoadFile(std::filesystem::path path);
+
+        // Add parents
+        void AddParent(Commit commit);
     };
 
     
     class Repo
     {
         SQLite::Database db;
+        std::filesystem::path root;
+        std::filesystem::path fs_storage_path;
+
+        struct Configuration
+        {
+            uintmax_t FilesystemSizeThreshold = 1024*1024; // if file > this size, it will be stored in fs
+        };
     public:
         
         Repo(std::filesystem::path path);
         ~Repo();
 
+        void CollectGarbage();
+
         // updates current index to this commit.
         bool UpdateIndex(std::optional<Commit> commit);
+        
+        bool UpdateHead(Commit commit);
         
         Commit GetIndex();
         
         Commit GetHead();
 
-        bool MoveHead(Commit commit);
-        
-        Commit GetCommit(std::string_view identifer);
+        // Returns from 0 to 2 commits.
+        std::vector<Commit> GetCommit(std::string_view identifer);
 
         // Get root path
-        std::string_view RootPath();
+        std::filesystem::path RootPath() const;
 
         // Start new commit
         Transaction StartCommit();
