@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <span>
+#include <set>
 #include <string_view>
 #include <vector>
 #include <filesystem>
@@ -122,6 +123,12 @@ namespace cringe
         // Start new commit
         Transaction StartCommit();
     };
+
+    int help_fn();
+    int cmd_init(const std::set<char> &singles, const std::vector<std::string_view> &args);
+    int cmd_add(const std::set<char> &singles, const std::vector<std::string_view> &args);
+    int cmd_log(const std::set<char> &singles, const std::vector<std::string_view> &args);
+    int cmd_commit(const std::set<char> &singles, const std::vector<std::string_view> &args);
 }
 
 
