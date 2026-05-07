@@ -15,6 +15,17 @@
 
 namespace cringe
 {
+    class CringeError : public std::runtime_error 
+    {
+    public:
+        std::vector<std::string> user_info;
+        CringeError(const std::string& msg, std::vector<std::string> info) 
+            : std::runtime_error(msg), 
+              user_info(std::move(info))
+        {}
+    };
+    
+    
     enum GitCommandTypes
     {
         GitCommandInit,
@@ -36,17 +47,18 @@ namespace cringe
         Commit(Repo &repo, commit_id_t id);
         ~Commit();
 
-
-        // restores File sytem to state of this commit
-        void RestoreFS();
+        std::vector<std::string> ListFiles();
 
         bool IsChildOf(Commit other);
 
         bool IsDirectChildOf(Commit other);
 
-        int64_t GetId();
+        commit_id_t GetId();
         
         std::vector<Commit> GetParents();
+
+        // restores File to state of this commit
+        bool RestoreFile(std::filesystem::path);
     };
 
     enum PendingUpdateAction
@@ -68,13 +80,15 @@ namespace cringe
         SQLite::Transaction tn;
         std::vector<PendingUpdate> updates;
         std::vector<Commit> parents;
+        std::string authorName;
         
-        vector<std::filesystem::path> Transaction::GetDiffrentFiles()    
+        std::generator<std::string> GetDiffrentFiles()    
+        std::generator<std::string> GetCommonFiles()    
         
         int64_t GetFileId(PendingUpdate update);
             
     public:
-        Transaction(Repo &repo, SQLite::Transaction tn);
+        Transaction(Repo &repo, std::string authorName, SQLite::Transaction tn);
         ~Transaction();
 
         // Applyes changes and returnining new commit
