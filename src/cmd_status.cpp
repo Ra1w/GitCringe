@@ -35,7 +35,12 @@ void dump_changes(cringe::Repo &repo, cringe::Commit commit)
             color = RED;
         }
 
-        std::println("{}file was {}: {}{}", color, stype, path.string(), RESET);
+        auto cwd = std::filesystem::current_path();
+        auto abs_path = std::filesystem::absolute(path).lexically_normal();
+        auto display_path = abs_path.lexically_relative(cwd);
+        auto fpath = display_path.empty() ? path.filename() : display_path;
+
+        std::println("{}file was {}: {}{}", color, stype, fpath.string(), RESET);
     }
 
     if (!any)
