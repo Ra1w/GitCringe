@@ -70,7 +70,7 @@ int cringe::cmd_status(const std::set<char> &singles, const std::vector<std::str
     
     std::println("Changes from INDEX:");
 
-    dump_changes(repo, repo.GetHead());
+    dump_changes(repo, repo.GetIndex());
         
     return 0;
 }
