@@ -93,6 +93,10 @@ int main(int argc, const char **argv)
     {
         return cringe::cmd_log(singles, args);
     }
+    else if (command == "exec")
+    {
+        return cringe::cmd_exec(singles, args);
+    }
     else if (command == "status")
     {
         return cringe::cmd_status(singles, args);
@@ -105,6 +109,7 @@ int main(int argc, const char **argv)
             "commit",
             "log",
             "status",
+            "exec",
             "help",
         };
         std::sort(known_commands.begin(), known_commands.end(), 

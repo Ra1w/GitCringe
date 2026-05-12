@@ -119,6 +119,8 @@ namespace cringe
         };
     public:
 
+        void Exec(std::string command);
+
         Configuration Config;
         
         Repo(std::filesystem::path path);
@@ -151,6 +153,8 @@ namespace cringe
     };
 
     int help_fn();
+    
+    int cmd_exec(const std::set<char> &singles, const std::vector<std::string_view> &args);
     int cmd_init(const std::set<char> &singles, const std::vector<std::string_view> &args);
     int cmd_add(const std::set<char> &singles, const std::vector<std::string_view> &args);
     int cmd_log(const std::set<char> &singles, const std::vector<std::string_view> &args);

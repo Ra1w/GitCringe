@@ -262,6 +262,147 @@ namespace cringe
         
         return results;
     }
+    
+
+
+    void Repo::Exec(std::string command)
+    {
+        try 
+        {
+            SQLite::Statement query(db, command);
+            
+            int columnCount = query.getColumnCount();
+            if (columnCount == 0) 
+            {
+                int rowsAffected = query.exec();
+                std::println("Query executed successfully. Rows affected: {}", rowsAffected);
+                return;
+            }
+
+            std::vector<std::string> headers;
+            for (int i = 0; i < columnCount; ++i) 
+            {
+                headers.push_back(query.getColumnName(i));
+            }
+
+            std::vector<std::vector<std::vector<std::string>>> rows;
+            std::vector<size_t> columnWidths(columnCount, 0);
+
+            for (int i = 0; i < columnCount; ++i) 
+            {
+                columnWidths[i] = headers[i].length();
+            }
+
+            while (query.executeStep()) 
+            {
+                std::vector<std::vector<std::string>> cellLinesInRow(columnCount);
+                for (int i = 0; i < columnCount; ++i) 
+                {
+                    std::string cellValue;
+                    
+                    if (query.isColumnNull(i)) 
+                    {
+                        cellValue = "NULL";
+                    }
+                    else 
+                    {
+                        const char* bytes = static_cast<const char*>(query.getColumn(i).getBlob());
+                        int size = query.getColumn(i).getBytes();
+                        
+                        bool hasBinary = false;
+                        for (int j = 0; j < size; ++j) 
+                        {
+                            unsigned char ch = static_cast<unsigned char>(bytes[j]);
+                            if (ch < 32 && ch != '\t' && ch != '\n' && ch != '\r') 
+                            {
+                                hasBinary = true;
+                                break;
+                            }
+                        }
+                        
+                        if (hasBinary) 
+                        {
+                            if (size)
+                            {
+                                cellValue += std::format("{:02X}", static_cast<unsigned char>(bytes[0]));
+                                for (int j = 1; j < size; ++j) 
+                                {
+                                    cellValue += std::format(" {:02X}", static_cast<unsigned char>(bytes[j]));
+                                }
+                            }
+                        }
+                        else 
+                        {
+                            cellValue = std::string(bytes, size);
+                        }
+                    }
+                    
+                    size_t start = 0;
+                    size_t end = cellValue.find('\n');
+                    while (end != std::string::npos) 
+                    {
+                        std::string line = cellValue.substr(start, end - start);
+                        if (!line.empty() && line.back() == '\r') line.pop_back();
+                        columnWidths[i] = std::max(columnWidths[i], line.length());
+                        cellLinesInRow[i].push_back(line);
+                        start = end + 1;
+                        end = cellValue.find('\n', start);
+                    }
+                    std::string lastLine = cellValue.substr(start);
+                    columnWidths[i] = std::max(columnWidths[i], lastLine.length());
+                    cellLinesInRow[i].push_back(lastLine);
+                }
+                rows.push_back(cellLinesInRow);
+            }
+
+            std::string separator = "+";
+            for (size_t width : columnWidths) 
+            {
+                separator += std::string(width + 2, '-') + "+";
+            }
+
+            std::println("{}", separator);
+
+            std::print("|");
+            for (int i = 0; i < columnCount; ++i) 
+            {
+                std::print(" {} |", std::format("{: <{}}", headers[i], columnWidths[i]));
+            }
+            std::println("");
+
+            std::println("{}", separator);
+
+            for (const auto& gridRow : rows) 
+            {
+                size_t maxLines = 0;
+                for (int i = 0; i < columnCount; ++i) 
+                {
+                    maxLines = std::max(maxLines, gridRow[i].size());
+                }
+
+                for (size_t lineIdx = 0; lineIdx < maxLines; ++lineIdx) 
+                {
+                    std::print("|");
+                    for (int i = 0; i < columnCount; ++i) 
+                    {
+                        std::string text = (lineIdx < gridRow[i].size()) ? gridRow[i][lineIdx] : "";
+                        std::print(" {} |", std::format("{: <{}}", text, columnWidths[i]));
+                    }
+                    std::println("");
+                }
+                std::println("{}", separator);
+            }
+
+            std::println("Total rows: {}", rows.size());
+        } 
+        catch (const std::exception& e) 
+        {
+            std::println("SQL Error: {}", e.what());
+        }
+    }
+
+
+
 
     Transaction::Transaction(Repo &repo, std::string authorName)
              : repo(repo), authorName(authorName), tn(repo.db)
