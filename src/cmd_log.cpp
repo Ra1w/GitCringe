@@ -29,7 +29,7 @@ int cringe::cmd_log(const std::set<char> &singles, const std::vector<std::string
     if (!target_commit.empty())
     {
         auto result = repo.GetCommit(args[0]);
-        if (result.size() == 2)
+        if (result.size() > 1)
         {
             std::println("Call is ambigous between {} and {}.", result[0].GetId(), result[1].GetId());
             return 1;

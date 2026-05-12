@@ -171,27 +171,79 @@ namespace cringe
     
     std::vector<Commit> Repo::GetCommit(std::string_view identifier) 
     {
-        std::string argument = "%" + std::string(identifier) + "%";
+        std::string str_id(identifier);
+        std::vector<Commit> results;
+
+        if (str_id == "HEAD") 
+        {
+            try 
+            {
+                results.push_back(GetHead());
+                return results;
+            }
+            catch (...) 
+            {
+                return {};
+            }
+        }
+
+        bool is_number = !str_id.empty() && std::all_of(str_id.begin(), str_id.end(), [](unsigned char c) 
+        { 
+            return std::isdigit(c); 
+        });
+
+        if (is_number)
+        {
+            try 
+            {
+                int64_t exact_id = std::stoll(str_id);
+                SQLite::Statement qId(db, R"Request(
+                    SELECT id FROM commits WHERE id = ?
+                )Request");
+                qId.bind(1, exact_id);
+                
+                if (qId.executeStep())
+                {
+                    results.emplace_back(*this, exact_id);
+                }
+            }
+            catch (const std::exception&) 
+            {
+            }
+        }
+
+        std::string argument = "%" + str_id + "%";
         
         SQLite::Statement query(db, R"Request(
-            SELECT commit_id, name FROM labels WHERE name LIKE ? LIMIT 2
+            SELECT commit_id, name FROM labels WHERE name LIKE ?
         )Request");
         query.bind(1, argument);
 
-        if (!query.executeStep()) 
+        while (query.executeStep()) 
         {
-            return {};
+            int64_t first_id = query.getColumn(0).getInt64();
+            if (query.getColumn(1).getString() == str_id)
+            {
+                return {Commit(*this, first_id)};
+            }
+            
+            bool exists = false;
+            for (const Commit &c : results)
+            {
+                if (c.GetId() == first_id)
+                {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists)
+            {
+                results.emplace_back(*this, first_id);
+            }
         }
-        int64_t first_id = query.getColumn(0).getInt64();
-        if (query.getColumn(1).getString() == identifier)
-        {
-            return {Commit(*this, first_id)};
-        }
-        if (query.executeStep()) 
-        {
-            return {Commit(*this, first_id), Commit(*this, query.getColumn(0).getInt64())};
-        }
-        return {Commit(*this, first_id)};
+
+        return results;
     }
 
     std::vector<Commit> Repo::GetReferences()
@@ -872,14 +924,18 @@ namespace cringe
     {
         std::vector<std::string> labels;
         
-        SQLite::Statement qHead(repo.db, "SELECT 1 FROM vhead WHERE commit_id = ?");
+        SQLite::Statement qHead(repo.db, R"Request(
+            SELECT 1 FROM vhead WHERE commit_id = ?
+        )Request");
         qHead.bind(1, id);
         if (qHead.executeStep())
         {
             labels.push_back("HEAD");
         }
         
-        SQLite::Statement qLabels(repo.db, "SELECT name FROM labels WHERE commit_id = ?");
+        SQLite::Statement qLabels(repo.db, R"Request(
+            SELECT name FROM labels WHERE commit_id = ?
+        )Request");
         qLabels.bind(1, id);
         while (qLabels.executeStep()) 
         {
