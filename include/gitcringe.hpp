@@ -56,6 +56,8 @@ namespace cringe
         
         std::string GetMessage() const;
 
+        bool UpdateMessage(const std::string& message);
+
         std::vector<std::string> GetLabels() const;
 
         std::vector<Commit> GetParents();

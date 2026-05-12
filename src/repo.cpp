@@ -207,7 +207,7 @@ namespace cringe
                     results.emplace_back(*this, exact_id);
                 }
             }
-            catch (const std::exception&) 
+            catch (const std::exception&)
             {
             }
         }
@@ -918,6 +918,18 @@ namespace cringe
         }
 
         return "";
+    }
+
+    bool Commit::UpdateMessage(const std::string& message)
+    {
+        SQLite::Statement query(repo.db, R"Request(
+            UPDATE commits SET message = ? WHERE id = ?
+        )Request");
+
+        query.bind(1, message);
+        query.bind(2, id);
+        
+        return query.exec() > 0;
     }
 
     std::vector<std::string> Commit::GetLabels() const

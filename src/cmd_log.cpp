@@ -42,8 +42,6 @@ int cringe::cmd_log(const std::set<char> &singles, const std::vector<std::string
         base.emplace(result[0]);
     }
 
-    std::println("Run from base id {}", base->GetId());
-
     /* create tree from strings */
     
     std::priority_queue<int64_t> pq;
