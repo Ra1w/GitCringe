@@ -835,5 +835,26 @@ namespace cringe
 
         return "";
     }
+
+    std::vector<std::string> Commit::GetLabels() const
+    {
+        std::vector<std::string> labels;
+        
+        SQLite::Statement qHead(repo.db, "SELECT 1 FROM vhead WHERE commit_id = ?");
+        qHead.bind(1, id);
+        if (qHead.executeStep())
+        {
+            labels.push_back("HEAD");
+        }
+        
+        SQLite::Statement qLabels(repo.db, "SELECT name FROM labels WHERE commit_id = ?");
+        qLabels.bind(1, id);
+        while (qLabels.executeStep()) 
+        {
+            labels.push_back(qLabels.getColumn(0).getString());
+        }
+
+        return labels;
+    }
     
 }

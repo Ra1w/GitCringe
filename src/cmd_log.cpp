@@ -81,6 +81,19 @@ int cringe::cmd_log(const std::set<char> &singles, const std::vector<std::string
         std::string author = current.GetAuthor();
         std::string msg = current.GetMessage();
 
+        std::string labels_str = "";
+        std::vector<std::string> labels = current.GetLabels();
+        if (!labels.empty())
+        {
+            labels_str += " (";
+            for (size_t i = 0; i < labels.size(); ++i)
+            {
+                labels_str += labels[i];
+                if (i < labels.size() - 1) labels_str += ", ";
+            }
+            labels_str += ")";
+        }
+
         if (one_line)
         {
             std::string first_line = msg;
@@ -89,11 +102,11 @@ int cringe::cmd_log(const std::set<char> &singles, const std::vector<std::string
             {
                 first_line = msg.substr(0, nl);
             }
-            std::println("{} {}", current_id, first_line);
+            std::println("{}{} {}", current_id, labels_str, first_line);
         }
         else
         {
-            std::println("commit {}", current_id);
+            std::println("commit {}{}", current_id, labels_str);
             std::println("Author: {}", author);
             std::println("");
             

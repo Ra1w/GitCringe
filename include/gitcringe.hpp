@@ -55,7 +55,9 @@ namespace cringe
         std::string GetAuthor() const;
         
         std::string GetMessage() const;
-        
+
+        std::vector<std::string> GetLabels() const;
+
         std::vector<Commit> GetParents();
 
         // restores File to state of this commit
