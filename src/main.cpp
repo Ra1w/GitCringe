@@ -112,6 +112,7 @@ int main(int argc, const char **argv)
     else if (command == "merge")
     {
         return cringe::cmd_merge(singles, args);
+    }
     else if (command == "show")
     {
         return cringe::cmd_show(singles, args);
