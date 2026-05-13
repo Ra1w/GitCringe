@@ -27,9 +27,9 @@ int cringe::cmd_commit(const std::set<char> &singles, const std::vector<std::str
     cringe::Commit head = repo.GetHead();
     cringe::Commit index = repo.GetIndex();
 
-    if (index.GetId() == 0)
+    if (index.GetId() == 0 || index.GetId() == head.GetId())
     {
-        std::println("Nothing to commit (index is empty). Use 'add' command first.");
+        std::println("Nothing to commit. Use 'add' command first.");
         return 1;
     }
 

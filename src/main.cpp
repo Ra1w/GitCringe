@@ -101,6 +101,10 @@ int main(int argc, const char **argv)
     {
         return cringe::cmd_status(singles, args);
     }
+    else if (command == "switch")
+    {
+        return cringe::cmd_switch(singles, args);
+    }
     else
     {
         std::vector<std::string> known_commands = {
@@ -111,6 +115,7 @@ int main(int argc, const char **argv)
             "status",
             "exec",
             "help",
+            "switch"
         };
         std::sort(known_commands.begin(), known_commands.end(), 
              [&command](const std::string& a, const std::string& b) {

@@ -172,6 +172,7 @@ namespace cringe
     int cmd_log(const std::set<char> &singles, const std::vector<std::string_view> &args);
     int cmd_commit(const std::set<char> &singles, const std::vector<std::string_view> &args);
     int cmd_status(const std::set<char> &singles, const std::vector<std::string_view> &args);
+    int cmd_switch(const std::set<char> &singles, const std::vector<std::string_view> &args);
 }
 
 
