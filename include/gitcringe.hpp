@@ -25,6 +25,14 @@ namespace cringe
               user_info(std::move(info))
         {}
     };
+
+
+    enum UpdateTypes
+    {
+        UPDATE_CREATE,
+        UPDATE_CHANGE,
+        UPDATE_DELETE,
+    };
     
 
     class Repo;
@@ -61,6 +69,8 @@ namespace cringe
         std::vector<std::string> GetLabels() const;
 
         std::vector<Commit> GetParents();
+
+        std::vector<std::pair<UpdateTypes, std::string>> GetChanges();
 
         // restores File to state of this commit
         bool RestoreFile(std::filesystem::path);
@@ -105,14 +115,6 @@ namespace cringe
 
         // Add parents
         void AddParent(Commit commit);
-    };
-
-
-    enum UpdateTypes
-    {
-        UPDATE_CREATE,
-        UPDATE_CHANGE,
-        UPDATE_DELETE,
     };
 
     
@@ -186,6 +188,7 @@ namespace cringe
     int cmd_switch(const std::set<char> &singles, const std::vector<std::string_view> &args);
     int cmd_branch(const std::set<char> &singles, const std::vector<std::string_view> &args);
     int cmd_merge(const std::set<char> &singles, const std::vector<std::string_view> &args);
+    int cmd_show(const std::set<char> &singles, const std::vector<std::string_view> &args);
 }
 
 

@@ -101,7 +101,7 @@ int main(int argc, const char **argv)
     {
         return cringe::cmd_status(singles, args);
     }
-    else if (command == "branch") // <--- НОВОЕ
+    else if (command == "branch")
     {
         return cringe::cmd_branch(singles, args);
     }
@@ -112,6 +112,9 @@ int main(int argc, const char **argv)
     else if (command == "merge")
     {
         return cringe::cmd_merge(singles, args);
+    else if (command == "show")
+    {
+        return cringe::cmd_show(singles, args);
     }
     else
     {
@@ -125,6 +128,8 @@ int main(int argc, const char **argv)
             "help",
             "switch",
             "merge",
+            "branch",
+            "show"
         };
         std::sort(known_commands.begin(), known_commands.end(), 
              [&command](const std::string& a, const std::string& b) {
