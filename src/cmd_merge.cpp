@@ -177,7 +177,7 @@ int cringe::cmd_merge(const std::set<char> &singles, const std::vector<std::stri
         }
         if (commits.size() > 1)
         {
-            std::println("Error: ambiguous target '{}'. Beetween commits with id {} and {}.", target, commits[0].GetId(), commits[1].GetId());
+            std::println("Error: ambiguous target '{}'. Between commits with id {} and {}.", target, commits[0].GetId(), commits[1].GetId());
             return 1;
         }
         
@@ -188,7 +188,7 @@ int cringe::cmd_merge(const std::set<char> &singles, const std::vector<std::stri
 
     for (auto path : trn.GetDiffrentFiles())
     {
-        std::println("file {} is diffrent in some parents, trying to merge it automatically...", path);
+        std::println("file {} is different in some parents, trying to merge it automatically...", path);
         std::vector<std::pair<int64_t, std::string>> content;
         for (const auto &[id, in_fs, data] : trn.GetFileVersions(path))
         {
@@ -210,17 +210,18 @@ int cringe::cmd_merge(const std::set<char> &singles, const std::vector<std::stri
 
         auto [merged_content, conflicts] = MergeMultipleStreams(streams);
         
-        std::ofstream out_file(std::string(path), std::ios::binary);
+        std::filesystem::path abs_path = repo.RootPath() / path;
+        std::ofstream out_file(abs_path, std::ios::binary);
         out_file << merged_content;
         
-        std::println("File {} automatically merged. Occured {} merge conflicts", path, conflicts);
+        std::println("File {} automatically merged. Occurred {} merge conflicts", path, conflicts);
         total_conflicts += conflicts;
 
-        trn.LoadFile(path);
+        trn.LoadFile(abs_path);
     }
 
     std::println("\n\nTotal {} conflicts occured", total_conflicts);
-    std::println("Use gc commit then you will be ready to confirm changes");
+    std::println("Use gitcringe commit then you will be ready to confirm changes");
 
     cringe::Commit new_index = trn.Apply("<merge-index>");
     std::println("Created merge commit with id {}", new_index.GetId());
