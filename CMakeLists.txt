@@ -21,6 +21,7 @@ add_executable(main src/main.cpp
                     src/cmd_help.cpp
                     src/cmd_init.cpp
                     src/cmd_merge.cpp
+                    src/cmd_diff.cpp
                     src/cmd_status.cpp
                     src/cmd_exec.cpp
                     src/cmd_log.cpp

@@ -13,6 +13,8 @@ void dump_changes(cringe::Repo &repo, cringe::Commit commit)
     const char* YELLOW = "\033[33m";
     const char* RESET = "\033[0m";
 
+    auto cwd = std::filesystem::current_path();
+    
     for (auto [type, path] : repo.ListChangedFiles(commit))
     {   
         any = true;
@@ -35,7 +37,6 @@ void dump_changes(cringe::Repo &repo, cringe::Commit commit)
             color = RED;
         }
 
-        auto cwd = std::filesystem::current_path();
         auto abs_path = std::filesystem::absolute(path).lexically_normal();
         auto display_path = abs_path.lexically_relative(cwd);
         auto fpath = display_path.empty() ? path.filename() : display_path;

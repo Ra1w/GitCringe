@@ -211,8 +211,11 @@ int cringe::cmd_merge(const std::set<char> &singles, const std::vector<std::stri
         auto [merged_content, conflicts] = MergeMultipleStreams(streams);
         
         std::filesystem::path abs_path = repo.RootPath() / path;
-        std::ofstream out_file(abs_path, std::ios::binary);
-        out_file << merged_content;
+        
+        {
+            std::ofstream out_file(abs_path, std::ios::binary);
+            out_file << merged_content;
+        }
         
         std::println("File {} automatically merged. Occurred {} merge conflicts", path, conflicts);
         total_conflicts += conflicts;

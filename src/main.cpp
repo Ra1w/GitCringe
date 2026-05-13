@@ -35,7 +35,7 @@ int main(int argc, const char **argv)
     std::set<char> singles;
     for (std::string_view arg : std::span(argv, argc).subspan(1))
     {
-        if (arg.size() > 2 && arg[0] == '-' && arg[1] != '-')
+        if (arg.size() >= 2 && arg[0] == '-' && arg[1] != '-')
         {
             for (char c : arg.substr(1))
             {

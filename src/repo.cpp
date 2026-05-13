@@ -976,6 +976,7 @@ namespace cringe
 
     bool Commit::RestoreFile(std::filesystem::path path) 
     {
+        path = std::filesystem::absolute(path);
         std::string relativePath = path.lexically_normal().lexically_relative(repo.RootPath()).string();
         
         SQLite::Statement query(repo.db, R"Request(
@@ -1015,6 +1016,50 @@ namespace cringe
             std::ofstream out(path, std::ios::binary);
             out.write(static_cast<const char*>(blob.getBlob()), blob.getBytes());
             return true;
+        }
+    }
+    
+    std::string Commit::GetFileContent(std::filesystem::path path) 
+    {
+        path = std::filesystem::absolute(path);
+        std::string relativePath = path.lexically_normal().lexically_relative(repo.RootPath()).string();
+        
+        SQLite::Statement query(repo.db, R"Request(
+            SELECT f.in_filesystem, f.filesystem_path, b.data
+            FROM commit_fs cfs
+            JOIN files f ON cfs.file_id = f.id
+            LEFT JOIN blobs b ON f.blob_id = b.id
+            WHERE cfs.commit_id = ? AND cfs.path = ?
+        )Request");
+
+        query.bind(1, id);
+        query.bind(2, relativePath);
+
+        if (!query.executeStep())
+        {
+            std::println("File don't exists");
+            return "";
+        }
+
+        bool inFilesystem = query.getColumn(0).getInt() > 0;
+
+        if (inFilesystem) 
+        {
+            std::println("Can't read file from LFS for now");
+            // TODO:
+            // std::string fsSourcePath = query.getColumn(1).getText();
+            // std::filesystem::copy_file(repo.RootPath() / fsSourcePath, path, 
+            //                            std::filesystem::copy_options::overwrite_existing);
+            return ""; 
+        } 
+        else 
+        {
+            auto blob = query.getColumn(2);
+            
+            size_t data_size = blob.getBytes();
+            const char* data_ptr = static_cast<const char*>(blob.getBlob());
+            
+            return std::string(data_ptr, data_size);
         }
     }
 

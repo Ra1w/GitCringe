@@ -74,6 +74,8 @@ namespace cringe
 
         // restores File to state of this commit
         bool RestoreFile(std::filesystem::path);
+        
+        std::string GetFileContent(std::filesystem::path path);
     };
 
     enum PendingUpdateAction

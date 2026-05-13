@@ -21,11 +21,19 @@ int cringe::cmd_add(const std::set<char> &singles, const std::vector<std::string
     {
         try 
         {
-            for (const auto& entry : std::filesystem::recursive_directory_iterator(repo.RootPath())) 
+            for (auto it = std::filesystem::recursive_directory_iterator(repo.RootPath());
+                      it != std::filesystem::recursive_directory_iterator(); ++it) 
             {
-                if (entry.is_regular_file() && entry.path().string().find(".cvcs") == std::string::npos) 
+                if (it->path().filename() == ".cvcs") 
                 {
-                    trn.LoadFile(entry.path());
+                    it.disable_recursion_pending();
+                    continue;
+                }
+            
+                if (it->is_regular_file()) 
+                {
+                    std::println("Loading file {}", it->path().string());
+                    trn.LoadFile(it->path());
                 }
             }
         } 
