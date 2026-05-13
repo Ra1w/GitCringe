@@ -117,6 +117,10 @@ int main(int argc, const char **argv)
     {
         return cringe::cmd_squash(singles, args);
     }
+    else if (command == "diff")
+    {
+        return cringe::cmd_diff(singles, args);
+    }
     else if (command == "show")
     {
         return cringe::cmd_show(singles, args);
@@ -135,7 +139,8 @@ int main(int argc, const char **argv)
             "merge",
             "branch",
             "squash",
-            "show"
+            "show",
+            "diff",
         };
         std::sort(known_commands.begin(), known_commands.end(), 
              [&command](const std::string& a, const std::string& b) {
