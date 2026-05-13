@@ -667,6 +667,62 @@ namespace cringe
         }
     }
 
+    std::vector<std::tuple<commit_id_t, bool, std::string>> Transaction::GetFileVersions(std::string path)
+    {
+        std::vector<std::tuple<commit_id_t, bool, std::string>> result;
+    
+        std::string queryParams = "?";
+        for (size_t i = 1; i < parents.size(); ++i) 
+        {
+            queryParams += ", ?";
+        }
+            
+        SQLite::Statement query(repo.db, R"Request(
+            SELECT 
+                b.data,
+                f.in_filesystem,
+                f.filesystem_path,
+                cf.commit_id
+            FROM commit_fs cf
+            JOIN files f ON cf.file_id = f.id
+            LEFT JOIN blobs b ON f.blob_id = b.id
+            WHERE cf.path = ? 
+              AND cf.commit_id IN ()Request" + queryParams + R"Request()
+        )Request");
+        
+        query.bind(1, path);
+        int bindIndex = 2;
+        for (const Commit &id : parents) 
+        {
+            query.bind(bindIndex++, id.GetId());
+        }
+    
+        while (query.executeStep()) 
+        {
+            bool inFilesystem = query.getColumn(1).getInt() != 0;
+            std::string fsPath = query.getColumn(2).getText(); 
+            int64_t id = query.getColumn(3).getInt64(); 
+            
+            std::string blobData;
+            if (!query.getColumn(0).isNull()) 
+            {
+                const void* blobPtr = query.getColumn(0).getBlob();
+                int blobSize = query.getColumn(0).getBytes();
+                blobData.assign(static_cast<const char*>(blobPtr), blobSize);
+            }
+
+            if (inFilesystem)
+            {
+                result.emplace_back(id, inFilesystem, fsPath);
+            }
+            else
+            {
+                result.emplace_back(id, inFilesystem, blobData);
+            }
+        }
+        return result;
+    }
+    
     std::generator<std::string> Transaction::GetDiffrentFiles()
     {
         if (parents.size() <= 1) 

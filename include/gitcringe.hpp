@@ -87,14 +87,15 @@ namespace cringe
         std::vector<Commit> parents;
         std::string authorName;
         
-        std::generator<std::string> GetDiffrentFiles();
-        std::generator<std::pair<int64_t, std::string>> GetCommonFiles();
-        
         int64_t GetFileId(PendingUpdate update);
             
     public:
         Transaction(Repo &repo, std::string authorName);
         ~Transaction();
+        
+        std::generator<std::string> GetDiffrentFiles();
+        std::generator<std::pair<int64_t, std::string>> GetCommonFiles();
+        std::vector<std::tuple<commit_id_t, bool, std::string>> GetFileVersions(std::string path);
 
         // Applyes changes and returnining new commit
         Commit Apply(std::string commitMessage);
@@ -184,6 +185,7 @@ namespace cringe
     int cmd_status(const std::set<char> &singles, const std::vector<std::string_view> &args);
     int cmd_switch(const std::set<char> &singles, const std::vector<std::string_view> &args);
     int cmd_branch(const std::set<char> &singles, const std::vector<std::string_view> &args);
+    int cmd_merge(const std::set<char> &singles, const std::vector<std::string_view> &args);
 }
 
 
