@@ -3,15 +3,38 @@
 #include <vector>
 #include <print>
 
+void replace_all(std::string& str, const std::string& from, const std::string& to) 
+{
+    if (from.empty()) return;
+    size_t start_pos = 0;
+    while ((start_pos = str.find(from, start_pos)) != std::string::npos) 
+    {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length(); 
+    }
+}
+
 int cringe::cmd_show(const std::set<char> &singles, const std::vector<std::string_view> &args)
 {
     (void)singles;
     cringe::Repo repo(std::filesystem::current_path());
 
     std::string_view target = "HEAD";
-    if (!args.empty()) 
+
+    std::string format_string = "";
+    bool custom_format = false;
+
+    for (std::string_view arg : args)
     {
-        target = args[0];
+        if (arg.starts_with("--format="))
+        {
+            format_string = arg.substr(9);
+            custom_format = true;
+        }
+        else if (!arg.starts_with("-"))
+        {
+            target = arg;
+        }
     }
 
     auto commits = repo.GetCommit(target);
@@ -39,6 +62,20 @@ int cringe::cmd_show(const std::set<char> &singles, const std::vector<std::strin
             if (i < labels.size() - 1) labels_str += ", ";
         }
         labels_str += ")";
+    }
+
+    if (custom_format)
+    {
+        std::string output = format_string;
+        
+        replace_all(output, "%h", std::to_string(commit.GetId()));
+        replace_all(output, "%an", commit.GetAuthor());
+        replace_all(output, "%s", commit.GetMessage());
+        replace_all(output, "%d", labels_str);
+        replace_all(output, "%n", "\n");
+
+        std::print("{}\n", output);
+        return 0;
     }
 
     const char* RED = "\033[31m";
