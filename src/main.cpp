@@ -101,7 +101,7 @@ int main(int argc, const char **argv)
     {
         return cringe::cmd_status(singles, args);
     }
-    else if (command == "branch") // <--- НОВОЕ
+    else if (command == "branch")
     {
         return cringe::cmd_branch(singles, args);
     }
@@ -119,7 +119,8 @@ int main(int argc, const char **argv)
             "status",
             "exec",
             "help",
-            "switch"
+            "switch",
+            "branch"
         };
         std::sort(known_commands.begin(), known_commands.end(), 
              [&command](const std::string& a, const std::string& b) {
