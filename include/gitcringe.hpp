@@ -189,6 +189,7 @@ namespace cringe
     int cmd_branch(const std::set<char> &singles, const std::vector<std::string_view> &args);
     int cmd_merge(const std::set<char> &singles, const std::vector<std::string_view> &args);
     int cmd_show(const std::set<char> &singles, const std::vector<std::string_view> &args);
+    int cmd_squash(const std::set<char> &singles, const std::vector<std::string_view> &args);
 }
 
 
