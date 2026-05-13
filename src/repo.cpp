@@ -1064,5 +1064,63 @@ namespace cringe
 
         return labels;
     }
-    
+
+    std::vector<std::pair<UpdateTypes, std::string>> Commit::GetChanges()
+    {
+        std::vector<std::pair<UpdateTypes, std::string>> results;
+        auto parents = GetParents();
+
+        if (parents.empty()) 
+        {
+            for (const auto& path : ListFiles()) 
+            {
+                results.emplace_back(UPDATE_CREATE, path);
+            }
+            return results;
+        }
+
+        commit_id_t parent_id = parents[0].GetId();
+
+        SQLite::Statement queryChild(repo.db, R"Request(
+            SELECT c.path, c.file_id, p.file_id 
+            FROM commit_fs c
+            LEFT JOIN commit_fs p ON p.commit_id = ? AND c.path = p.path
+            WHERE c.commit_id = ?
+        )Request");
+        queryChild.bind(1, parent_id);
+        queryChild.bind(2, id);
+
+        std::set<std::string> child_paths;
+        
+        while (queryChild.executeStep()) 
+        {
+            std::string path = queryChild.getColumn(0).getString();
+            child_paths.insert(path);
+            
+            if (queryChild.isColumnNull(2)) 
+            {
+                results.emplace_back(UPDATE_CREATE, path);
+            } 
+            else if (queryChild.getColumn(1).getInt64() != queryChild.getColumn(2).getInt64()) 
+            {
+                results.emplace_back(UPDATE_CHANGE, path);
+            }
+        }
+
+        SQLite::Statement queryParent(repo.db, R"Request(
+            SELECT path FROM commit_fs WHERE commit_id = ?
+        )Request");
+        queryParent.bind(1, parent_id);
+        
+        while (queryParent.executeStep()) 
+        {
+            std::string path = queryParent.getColumn(0).getString();
+            if (!child_paths.contains(path)) 
+            {
+                results.emplace_back(UPDATE_DELETE, path);
+            }
+        }
+        
+        return results;
+    }
 }

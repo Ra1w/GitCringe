@@ -24,7 +24,8 @@ add_executable(main src/main.cpp
                     src/cmd_exec.cpp
                     src/cmd_log.cpp
                     src/cmd_switch.cpp
-                    src/cmd_branch.cpp)
+                    src/cmd_branch.cpp
+                    src/cmd_show.cpp)
 
 target_link_libraries(main PRIVATE SQLiteCpp)
 target_include_directories(main PRIVATE include)
