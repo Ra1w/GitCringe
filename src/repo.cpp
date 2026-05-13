@@ -278,11 +278,7 @@ namespace cringe
     {
         std::vector<Commit> refs;
         SQLite::Statement query(db, R"Request(
-            SELECT DISTINCT commit_id FROM labels WHERE commit_id IS NOT NULL
-            UNION
-            SELECT commit_id FROM vhead WHERE commit_id IS NOT NULL
-            UNION
-            SELECT commit_id FROM vindex WHERE commit_id IS NOT NULL
+            SELECT * FROM commits
         )Request");
         
         while (query.executeStep()) 
