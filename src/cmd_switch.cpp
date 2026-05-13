@@ -25,7 +25,7 @@ int cringe::cmd_switch(const std::set<char> &singles, const std::vector<std::str
     }
     if (commits.size() > 1)
     {
-        std::println("Error: ambiguous target '{}'. Multiple commits found.", target);
+        std::println("Error: ambiguous target '{}'. Beetween commits with id {} and {}.", target, commits[0].GetId(), commits[1].GetId());
         return 1;
     }
 
